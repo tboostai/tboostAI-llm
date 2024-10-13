@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 
@@ -23,7 +22,7 @@ public class WebClientUtils {
         this.webClientBuilder = webClientBuilder;
     }
 
-    public <T> Mono<T> sendExternalPostRequest(String uri, Map<String, Object> bodyValue, Map<String, String> headerToValue, Class<T> responseType, Integer maxAttempts, Integer durationInSecond) {
+    public <T> Mono<T> sendExternalPostRequest(String uri, String bodyValue, Map<String, String> headerToValue, Class<T> responseType, Integer maxAttempts, Integer durationInSecond) {
 
         WebClient.RequestBodySpec uriSpec = webClientBuilder.build().post()
                 .uri(uri);

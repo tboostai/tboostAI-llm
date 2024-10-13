@@ -1,13 +1,11 @@
 package com.tboostai_llm.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tboostai_llm.entity.request.Message;
 import com.tboostai_llm.entity.request.OpenAIRequest;
+import com.tboostai_llm.entity.response.FormattedDescription;
 import com.tboostai_llm.entity.response.SearchParamsResponse;
+import com.tboostai_llm.util.CommonUtil;
 import com.tboostai_llm.util.WebClientUtils;
-import jakarta.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,9 +13,10 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.tboostai_llm.common.GeneralConstants.*;
 
 @Service
 public class OpenAIService {
@@ -28,52 +27,47 @@ public class OpenAIService {
     @Value("${openai.project.chat.url}")
     private String openAIAPIChatUrl;
 
-    @Resource
-    private WebClientUtils webClientUtils;
+    private final WebClientUtils webClientUtils;
 
     private static final Logger logger = LoggerFactory.getLogger(OpenAIService.class);
 
-    public Mono<SearchParamsResponse> getResponseFromLLM(OpenAIRequest openAIRequest) throws Exception {
-        Map<String, String> requestHeaders = new HashMap<>();
-        requestHeaders.put("Content-Type", "application/json");
-        requestHeaders.put("Accept", "application/json");
-        requestHeaders.put("Authorization", openAIAPIKey);
-        Mono<String> responseResStr = webClientUtils.sendExternalPostRequest(openAIAPIChatUrl, buildRequestBody(openAIRequest), requestHeaders, String.class, null, null);
-
-        return responseResStr.map(this::parseResponse);
+    public OpenAIService(WebClientUtils webClientUtils) {
+        this.webClientUtils = webClientUtils;
     }
 
-    private Map<String, Object> buildRequestBody(OpenAIRequest openAIRequest) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("model", "gpt-4o");
-
-        List<Map<String, String>> messages = new ArrayList<>();
-
-        for (Message message : openAIRequest.getMessages()) {
-            Map<String, String> messageMap = new HashMap<>();
-            messageMap.put("role", message.getRole());
-            messageMap.put("content", message.getContent());
-            messages.add(messageMap);
-        }
-
-        body.put("messages", messages);
-
-        return body;
+    public Mono<SearchParamsResponse> getResponseFromLLM(OpenAIRequest openAIRequest) {
+        Map<String, String> requestHeaders = CommonUtil.generateOpenAIRequestHeader(openAIAPIKey);
+        logger.info("Request header is {}", requestHeaders);
+        String requestBody = CommonUtil.parseObjToString(CommonUtil.buildOpenAIRequestBody(openAIRequest));
+        Mono<String> responseResStr = webClientUtils.sendExternalPostRequest(openAIAPIChatUrl, requestBody, requestHeaders, String.class, 3, 5);
+        logger.info("OpenAI Response is {}", responseResStr);
+        return responseResStr.mapNotNull(response -> CommonUtil.parseJsonToObject(response, SearchParamsResponse.class));
     }
 
-    public SearchParamsResponse parseResponse(String jsonResponse) {
-        ObjectMapper objectMapper = new ObjectMapper();
+    public Mono<FormattedDescription> beautifulDescriptions(Object description) {
+        Map<String, String> requestHeaders = CommonUtil.generateOpenAIRequestHeader(openAIAPIKey);
+        logger.info("Request header is {}", requestHeaders);
+        Message systemMsg = new Message();
+        systemMsg.setRole(OPENAI_SYSTEM);
+        systemMsg.setContent(OPENAI_SYSTEM_DEFAULT_MSG_FOR_BEAUTIFUL_DESC);
 
+        Message descMsg = new Message();
+        descMsg.setRole(OPENAI_USER);
+        descMsg.setContent(description.toString());
 
-        JsonNode root;
-        try {
-            root = objectMapper.readTree(jsonResponse);
-            String content = root.path("choices").get(0).path("message").path("content").asText();
+        OpenAIRequest openAIRequest = new OpenAIRequest();
+        List<Message> messages = new ArrayList<>();
+        messages.add(systemMsg);
+        messages.add(descMsg);
+        openAIRequest.setMessages(messages);
 
-            return objectMapper.readValue(content, SearchParamsResponse.class);
-        } catch (JsonProcessingException e) {
-            logger.error("Failed to parse json response", e);
-        }
-        return null;
+        logger.info("OpenAI Request in class {} is {}", this.getClass().getName(), openAIRequest);
+
+        String requestBody = CommonUtil.parseObjToString(CommonUtil.buildOpenAIRequestBody(openAIRequest));
+
+        Mono<String> responseResStr = webClientUtils.sendExternalPostRequest(openAIAPIChatUrl, requestBody, requestHeaders, String.class, 3, 5);
+        logger.info("OpenAI response in class {} is {}", this.getClass().getName(), responseResStr);
+
+        return responseResStr.mapNotNull(response -> CommonUtil.parseJsonToObject(response, FormattedDescription.class));
     }
 }

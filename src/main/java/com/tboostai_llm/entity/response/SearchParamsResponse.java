@@ -11,22 +11,22 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class SearchParamsResponse implements Serializable {
-    private String make;
-    private String model;
+    private List<String> make;
+    private List<String> model;
     private Integer minYear;
     private Integer maxYear;
-    private String trim;
+    private List<String> trim;
     private Integer mileage;
     private Double minPrice;
     private Double maxPrice;
-    private String color;
-    private String bodyType;
-    private String engineType;
-    private String transmission;
-    private String drivetrain;
+    private List<String> color;
+    private List<String> bodyType;
+    private List<String> engineType;
+    private List<String> transmission;
+    private List<String> drivetrain;
     private Double longitude;
     private Double latitude;
-    private String condition;
+    private List<String> condition;
     private Integer capacity;
     private List<String> features;
 }

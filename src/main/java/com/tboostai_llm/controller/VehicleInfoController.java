@@ -1,6 +1,7 @@
 package com.tboostai_llm.controller;
 
 import com.tboostai_llm.entity.request.OpenAIRequest;
+import com.tboostai_llm.entity.response.FormattedDescription;
 import com.tboostai_llm.entity.response.SearchParamsResponse;
 import com.tboostai_llm.service.OpenAIService;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -9,11 +10,11 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
 @RestController
-public class VehicleRecommendationController {
+public class VehicleInfoController {
 
     private final OpenAIService openAIService;
 
-    public VehicleRecommendationController(OpenAIService openAIService) {
+    public VehicleInfoController(OpenAIService openAIService) {
         this.openAIService = openAIService;
     }
 
@@ -26,9 +27,12 @@ public class VehicleRecommendationController {
         }
     }
 
-    @PostMapping("/llm-test")
-    public String getLlmDataTest(@RequestBody String content) {
-
-        return "Response from tboostAI-llm, and request body content is : " + content;
+    @PostMapping("/description")
+    public Mono<FormattedDescription> getDescriptionData(@RequestBody Object description) {
+        try {
+            return openAIService.beautifulDescriptions(description);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }
