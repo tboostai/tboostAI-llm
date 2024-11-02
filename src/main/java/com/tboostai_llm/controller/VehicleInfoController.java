@@ -1,7 +1,6 @@
 package com.tboostai_llm.controller;
 
 import com.tboostai_llm.entity.request.Message;
-import com.tboostai_llm.entity.request.OpenAIRequest;
 import com.tboostai_llm.entity.response.FormattedDescription;
 import com.tboostai_llm.entity.response.SearchParamsResponse;
 import com.tboostai_llm.service.OpenAIService;
