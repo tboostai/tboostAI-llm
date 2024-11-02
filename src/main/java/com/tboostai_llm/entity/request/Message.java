@@ -1,12 +1,10 @@
 package com.tboostai_llm.entity.request;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 import java.io.Serializable;
 
-@Setter
-@Getter
+@Data
 public class Message implements Serializable {
     private String role;
     private String content;

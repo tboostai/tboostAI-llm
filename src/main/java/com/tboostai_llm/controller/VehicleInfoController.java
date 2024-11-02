@@ -1,6 +1,6 @@
 package com.tboostai_llm.controller;
 
-import com.tboostai_llm.entity.request.OpenAIRequest;
+import com.tboostai_llm.entity.request.Message;
 import com.tboostai_llm.entity.response.FormattedDescription;
 import com.tboostai_llm.entity.response.SearchParamsResponse;
 import com.tboostai_llm.service.OpenAIService;
@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 @RestController
 public class VehicleInfoController {
@@ -22,9 +24,9 @@ public class VehicleInfoController {
     }
 
     @PostMapping("/llm")
-    public Mono<SearchParamsResponse> getLlmData(@RequestBody OpenAIRequest request) {
+    public Mono<SearchParamsResponse> getLlmData(@RequestBody List<Message> messages) {
         try {
-            return openAIService.getResponseFromLLM(request);
+            return openAIService.getResponseFromLLM(messages);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

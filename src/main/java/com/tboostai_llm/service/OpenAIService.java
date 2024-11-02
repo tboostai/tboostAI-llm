@@ -35,9 +35,10 @@ public class OpenAIService {
         this.webClientUtils = webClientUtils;
     }
 
-    public Mono<SearchParamsResponse> getResponseFromLLM(OpenAIRequest openAIRequest) {
+    public Mono<SearchParamsResponse> getResponseFromLLM(List<Message> messages) {
+        OpenAIRequest openAIRequest = new OpenAIRequest();
+        openAIRequest.setMessages(messages);
         Map<String, String> requestHeaders = CommonUtil.generateOpenAIRequestHeader(openAIAPIKey);
-        logger.info("Request header is {}", requestHeaders);
         String requestBody = CommonUtil.parseObjToString(CommonUtil.buildOpenAIRequestBody(openAIRequest));
         Mono<String> responseResStr = webClientUtils.sendExternalPostRequest(openAIAPIChatUrl, requestBody, requestHeaders, String.class, 3, 5);
         logger.info("OpenAI Response is {}", responseResStr);

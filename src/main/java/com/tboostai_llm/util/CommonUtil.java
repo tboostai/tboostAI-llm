@@ -13,6 +13,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.tboostai_llm.common.GeneralConstants.*;
+
 public class CommonUtil {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -21,27 +23,27 @@ public class CommonUtil {
 
     public static Map<String, String> generateOpenAIRequestHeader(String openAIAPIKey) {
         Map<String, String> requestHeaders = new HashMap<>();
-        requestHeaders.put("Content-Type", "application/json");
-        requestHeaders.put("Accept", "application/json");
-        requestHeaders.put("Authorization", openAIAPIKey);
+        requestHeaders.put(CONTENT_TYPE, APPLICATION_JSON);
+        requestHeaders.put(ACCEPT, APPLICATION_JSON);
+        requestHeaders.put(AUTHORIZATION, openAIAPIKey);
 
         return requestHeaders;
     }
 
     public static Map<String, Object> buildOpenAIRequestBody(OpenAIRequest openAIRequest) {
         Map<String, Object> body = new HashMap<>();
-        body.put("model", "gpt-4o");
+        body.put(OPENAI_MODEL_KEY, OPENAI_MODEL_VALUE);
 
         List<Map<String, String>> messages = new ArrayList<>();
 
         for (Message message : openAIRequest.getMessages()) {
             Map<String, String> messageMap = new HashMap<>();
-            messageMap.put("role", message.getRole());
-            messageMap.put("content", message.getContent());
+            messageMap.put(OPENAI_ROLE, message.getRole());
+            messageMap.put(OPENAI_CONTENT, message.getContent());
             messages.add(messageMap);
         }
 
-        body.put("messages", messages);
+        body.put(OPENAI_MESSAGES, messages);
 
         return body;
     }
@@ -65,7 +67,7 @@ public class CommonUtil {
         JsonNode root;
         try {
             root = objectMapper.readTree(jsonBody);
-            String content = root.path("choices").get(0).path("message").path("content").asText();
+            String content = root.path(OPENAI_CHOICES).get(0).path(OPENAI_MESSAGE).path(OPENAI_CONTENT).asText();
             logger.info("Response content from OpenAI: {}", content);
             return objectMapper.readValue(content, clazz);
         } catch (JsonProcessingException e) {
