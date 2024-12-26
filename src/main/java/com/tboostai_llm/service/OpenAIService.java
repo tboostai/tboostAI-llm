@@ -2,6 +2,7 @@ package com.tboostai_llm.service;
 
 import com.tboostai_llm.entity.request.Message;
 import com.tboostai_llm.entity.request.OpenAIRequest;
+import com.tboostai_llm.entity.response.AIChatResp;
 import com.tboostai_llm.entity.response.FormattedDescription;
 import com.tboostai_llm.entity.response.SearchParamsResponse;
 import com.tboostai_llm.util.CommonUtil;
@@ -70,5 +71,15 @@ public class OpenAIService {
         logger.info("OpenAI response in class {} is {}", this.getClass().getName(), responseResStr);
 
         return responseResStr.mapNotNull(response -> CommonUtil.parseJsonToObject(response, FormattedDescription.class));
+    }
+
+    public Mono<AIChatResp> getChatResponse(List<Message> messages) {
+        OpenAIRequest openAIRequest = new OpenAIRequest();
+        openAIRequest.setMessages(messages);
+        Map<String, String> requestHeaders = CommonUtil.generateOpenAIRequestHeader(openAIAPIKey);
+        String requestBody = CommonUtil.parseObjToString(CommonUtil.buildOpenAIRequestBody(openAIRequest));
+        Mono<String> responseResStr = webClientUtils.sendExternalPostRequest(openAIAPIChatUrl, requestBody, requestHeaders, String.class, 3, 5);
+        logger.info("OpenAI Response is {}", responseResStr);
+        return responseResStr.mapNotNull(response -> CommonUtil.parseJsonToObject(response, AIChatResp.class));
     }
 }
