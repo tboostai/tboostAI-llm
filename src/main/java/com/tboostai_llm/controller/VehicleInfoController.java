@@ -1,6 +1,7 @@
 package com.tboostai_llm.controller;
 
 import com.tboostai_llm.entity.request.Message;
+import com.tboostai_llm.entity.response.AIChatResp;
 import com.tboostai_llm.entity.response.FormattedDescription;
 import com.tboostai_llm.entity.response.SearchParamsResponse;
 import com.tboostai_llm.service.OpenAIService;
@@ -40,5 +41,15 @@ public class VehicleInfoController {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @PostMapping("/chat")
+    public Mono<AIChatResp> postDescriptionData(@RequestBody List<Message> messages) {
+        try {
+           return openAIService.getChatResponse(messages);
+        } catch (Exception e) {
+            logger.error("VehicleInfoController:postDescriptionData - Got an error: {}", e.getMessage());
+        }
+        return Mono.empty();
     }
 }
