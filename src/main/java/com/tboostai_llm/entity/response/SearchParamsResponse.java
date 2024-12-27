@@ -29,4 +29,5 @@ public class SearchParamsResponse implements Serializable {
     private List<String> condition;
     private Integer capacity;
     private List<String> features;
+    private Double distance;
 }
